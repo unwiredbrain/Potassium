@@ -20,7 +20,7 @@
 /**
  * Instantiates, sets up and exposes the Potassium (K) object.
  * 
- * @param {object} root The root element.
+ * @param {object} root The host root element.
  */
 (function (root) {
 
@@ -33,10 +33,10 @@
      * 
      * Creates the Potassium (K) object trough an IIFE and using the revealing pattern.
      * 
-     * @param {bool} TRUE A pure boolean true value.
-     * @param {bool} FALSE A pure boolean false value.
-     * @param {null} NULL A pure null value.
-     * @param {undefined} UNDEFINED A pure undefined value.
+     * @param {bool} TRUE A pure boolean true value. Minimization helper.
+     * @param {bool} FALSE A pure boolean false value. Minimization helper.
+     * @param {null} NULL A pure null value. Minimization helper.
+     * @param {undefined} UNDEFINED A pure undefined value. Minimization helper. DO NOT FUCKING USE.
      * @return {object} The Potassium (K) API.
      */
     var K = (function (TRUE, FALSE, NULL, UNDEFINED) {
@@ -45,6 +45,7 @@
         /**
          * The Potassium (K) instance holder.
          * 
+         * @private
          * @type {object}
          */
         var that;
@@ -53,6 +54,7 @@
         /**
          * A shortcut to Object.prototype cached for minification reasons.
          * 
+         * @private
          * @type {object}
          */
         var objectPrototype = Object.prototype;
@@ -64,15 +66,17 @@
          * False by default, it'll be changed during the object instantiation.
          * This control will prevent the Potassium (K) object to be (re)instanced multiple times.
          * 
+         * @private
          * @type {bool}
          */
         var isConstructed = FALSE;
 
 
         /**
-         * The constructor, easy as pie.
+         * Constructor (sort of)
          * 
-         * Scroll to the end of the IIFE to see its usage.
+         * Updates the pointer to the (internally) shared Potassium (K) instance.
+         * Don't get it? Look right below the end of the main Potassium (K) IIFE.
          * 
          * @return {object} The Potassium (K) instance, so to enable fluent interfaces.
          */
@@ -89,11 +93,11 @@
          * Safe shortcut to Object.prototype.hasOwnProperty.
          * 
          * @param {object} object The object to inspect.
-         * @param {string} member The property to check.
-         * @return {bool} Whether the member is an own property of the object.
+         * @param {string} property The property to check.
+         * @return {bool} Whether the property given is an own property of the object.
          */
-        function hop(object, member) {
-            return objectPrototype.hasOwnProperty.call(object, member);
+        function hop(object, property) {
+            return objectPrototype.hasOwnProperty.call(object, property);
         }
 
 
@@ -101,20 +105,20 @@
          * Checks whether a value is empty.
          * 
          * A string and an array can be empty only if their length property is equal to zero.
-         * An object is empty only if it has no members to explore.
-         * Undefned and null values are empty by default.
+         * An object is empty only if it has no own members to explore.
+         * Undefined and null values are empty by default.
          * 
-         * @param {*} object The object to inspect.
-         * @return {bool} Whether the object value is empty.
+         * @param {mixed} value The value to inspect.
+         * @return {bool} Whether the value is empty.
          */
-        function isEmpty(object) {
+        function isEmpty(value) {
             var member;
-            if (isNull(object) || isUndefined(object) || (typeOf(object) in { "Array": 1, "String": 1 } && 0 === object.length)) {
+            if (isNull(value) || isUndefined(value) || (typeOf(value) in { "Array": 1, "String": 1 } && 0 === value.length)) {
                 return TRUE;
             }
-            if ("Object" === typeOf(object)) {
-                for (member in object) {
-                    if (hop(object, member) && pie(object, member)) {
+            if ("Object" === typeOf(value)) {
+                for (member in value) {
+                    if (hop(value, member) && pie(value, member)) {
                         return FALSE;
                     }
                 }
@@ -127,22 +131,22 @@
         /**
          * Checks whether a value is null.
          * 
-         * @param {*} object The object to inspect.
-         * @return {bool} Whether the object value is null.
+         * @param {mixed} value The value to inspect.
+         * @return {bool} Whether the value is null.
          */
-        function isNull(object) {
-            return NULL === object;
+        function isNull(value) {
+            return NULL === value;
         }
 
 
         /**
          * Checks whether a value is undefined.
          * 
-         * @param {*} object The object to inspect.
-         * @return {bool} Whether the object value is undefined.
+         * @param {mixed} value The value to inspect.
+         * @return {bool} Whether the value is undefined.
          */
-        function isUndefined(object) {
-            return UNDEFINED === object;
+        function isUndefined(value) {
+            return UNDEFINED === value;
         }
 
 
@@ -186,7 +190,7 @@
          *     The above will instantiate two namespaces: K.Foo and K.Apple and each of them will be initialized.
          * 
          * @param {string} chain The namespace to initialize.
-         * @param {*} initialization The object that will be used to initialize the namespace. Optional.
+         * @param {mixed} initialization What will be used to initialize the namespace. Optional.
          * @return {object} The Potassium (K) instance so to enable fluent interfaces.
          */
         function namespace(chain, initialization) {
@@ -194,12 +198,10 @@
                 link,
                 last,
                 base = that;
+            initialization = initialization || {};
             chain = (chain || "").split(".");
             for (link = "K" === chain[0] ? 1 : 0, links = chain.length, last = links - 1; link < links; link += 1) {
-                base[chain[link]] = base[chain[link]] || {};
-                if (link === last && initialization) {
-                    base[chain[link]] = initialization;
-                }
+                base[chain[link]] = base[chain[link]] || link === last ? initialization : {};
                 base = base[chain[link]];
             }
             return that;
@@ -218,22 +220,22 @@
          * Safe shortcut to Object.prototype.propertyIsEnumerable.
          * 
          * @param {object} object The object to inspect.
-         * @param {string} member The property to check.
-         * @return {bool} Whether the member of the object is enumerable.
+         * @param {string} property The property to check.
+         * @return {bool} Whether the given property of the object is enumerable.
          */
-        function pie(object, member) {
-            return objectPrototype.propertyIsEnumerable.call(object, member);
+        function pie(object, property) {
+            return objectPrototype.propertyIsEnumerable.call(object, property);
         }
 
 
         /**
-         * A 'real' typeof operator alternative that doesn't suck.
+         * A 'real' typeof operator alternative that doesn't suck that much.
          * 
-         * @param {*} object The object to inspect.
-         * @return {string} The type of the inspected object.
+         * @param {mixed} value The value to inspect.
+         * @return {string} The type of the inspected value.
          */
-        function typeOf(object) {
-            return objectPrototype.toString.call(object).slice(8, -1);
+        function typeOf(value) {
+            return objectPrototype.toString.call(value).slice(8, -1);
         }
 
 
@@ -262,7 +264,7 @@
     K.construct();
 
 
-    // Attaches the inner object to the root element.
+    // Attaches the inner Potassium (K) instance to the root element.
     root.K = K;
 
 
